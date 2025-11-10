@@ -21,14 +21,20 @@
 	</div>
 
 	<div>
-		<label>Groups of Connected Edges:</label>
+		<label>Paths:</label>
 		<div>
 			<textarea
-				id="textareaEdges"
+				id="textareaPaths"
 				cols="40" rows="10"
 				spellcheck="false"
 			></textarea>
 		</div>
+	</div>
+
+	<div>
+		<button onclick="UiEventHandler.buttonPathsToMeshes_Clicked()">
+			Convert Paths to Meshes
+		</button>
 	</div>
 
 	<div>
@@ -40,6 +46,13 @@
 				spellcheck="false"
 			></textarea>
 		</div>
+
+		<div>
+			<button onclick="UiEventHandler.buttonMeshesRender_Clicked()">
+				Render Meshes
+			</button>
+		</div>
+
 		<div>
 			<label>Rendered:</label>
 			<div id="divMeshesRendered">
@@ -63,6 +76,7 @@
 <script type="text/javascript" src="ImageToMeshParser.js"></script>
 <script type="text/javascript" src="Mesh.js"></script>
 <script type="text/javascript" src="Orientation.js"></script>
+<script type="text/javascript" src="Path.js"></script>
 <script type="text/javascript" src="Plane.js"></script>
 <script type="text/javascript" src="Ray.js"></script>
 <script type="text/javascript" src="Transform_Camera.js"></script>

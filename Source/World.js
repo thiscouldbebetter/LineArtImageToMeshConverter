@@ -1,34 +1,10 @@
 
 class World
 {
-	constructor(imageForMap, camera)
+	constructor(camera, meshesForMap)
 	{
-		this.imageForMap = imageForMap;
 		this.camera = camera;
-
-		this.edgeGroupsConnectedForMap = null;
-		this.meshesForMap = null;
-	}
-
-	initialize()
-	{
-		var colorToIgnore = new Color([255, 255, 255, 255]);
-		var colorForWall = new Color([0, 0, 0, 255]);
-		var wallHeight = 10;
-
-		var parser = new ImageToMeshParser
-		(
-			colorToIgnore,
-			colorForWall, 
-			wallHeight,
-			10 // depthMax
-		);
-
-		this.edgeGroupsConnectedForMap =
-			parser.imageToEdgeGroupsConnected(this.imageForMap);
-
-		this.meshesForMap =
-			parser.edgeGroupsConnectedToMeshes(this.edgeGroupsConnectedForMap);
+		this.meshesForMap = meshesForMap;
 	}
 
 	update()

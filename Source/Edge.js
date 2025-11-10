@@ -65,14 +65,14 @@ class Edge
 				for (var j = 0; j < other.vertices.length; j++)
 				{
 					var vertexOther = other.vertices[j];
-					
-					var areVerticesEqual = vertexThis.equals
+
+					var verticesAreEqual = vertexThis.equals
 					(
 						vertexOther
 					);
 
-					if (areVerticesEqual == true)
-					{	
+					if (verticesAreEqual)
+					{
 						var vertexThisOuter = this.vertices[1 - i];
 						var vertexOtherOuter = other.vertices[1 - j];
 
@@ -97,5 +97,10 @@ class Edge
 	toStringVerticesFromToXY()
 	{
 		return this.vertices.map(x => x.toStringXY() ).join("-");
+	}
+
+	verticesReverse()
+	{
+		this.vertices = this.vertices.reverse();
 	}
 }

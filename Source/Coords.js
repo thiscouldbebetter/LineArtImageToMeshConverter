@@ -8,6 +8,16 @@ class Coords
 		this.z = z;
 	}
 
+	static fromXY(x, y)
+	{
+		return new Coords(x, y, 0);
+	}
+
+	static fromXYZ(x, y, z)
+	{
+		return new Coords(x, y, z);
+	}
+
 	static NumberOfDimensions = 3;
 
 	add(other)
@@ -199,6 +209,29 @@ class Coords
 		return this;
 	}
 
+	// Serialization.
+
+	static fromStringXY(coordsAsString)
+	{
+		var xAndYAsStrings = coordsAsString.split("x");
+		var xAndY = xAndYAsStrings.map(x => parseFloat(x) );
+		var x = xAndY[0];
+		var y = xAndY[1];
+		var returnValue = Coords.fromXY(x, y);
+		return returnValue;
+	}
+
+	static fromStringXYZ(coordsAsString)
+	{
+		var xyzAsStrings = coordsAsString.split("x");
+		var xyz = xyzAsStrings.map(x => parseFloat(x) );
+		var x = xyz[0];
+		var y = xyz[1];
+		var z = xyz[2];
+		var returnValue = Coords.fromXYZ(x, y, z);
+		return returnValue;
+	}
+
 	toStringXY()
 	{
 		var returnValue =
@@ -210,8 +243,8 @@ class Coords
 	toStringXYZ()
 	{
 		var returnValue =
-			+ this.x + ","
-			+ this.y + ","
+			+ this.x + "x"
+			+ this.y + "x"
 			+ this.z;
 
 		return returnValue;

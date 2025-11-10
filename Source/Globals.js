@@ -6,7 +6,6 @@ class Globals
 	initialize(world)
 	{
 		this.world = world;
-		this.world.initialize();
 
 		this.displayHelper = new DisplayHelper();
 		this.displayHelper.initialize(this.world.camera.viewSize);

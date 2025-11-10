@@ -9,6 +9,23 @@ class ImageToMeshParser
 		this.depthMax = depthMax;
 	}
 
+	static default()
+	{
+		var colorToIgnore = new Color([255, 255, 255, 255]);
+		var colorForWall = new Color([0, 0, 0, 255]);
+		var wallHeight = 10;
+
+		var parser = new ImageToMeshParser
+		(
+			colorToIgnore,
+			colorForWall, 
+			wallHeight,
+			10 // depthMax
+		);
+
+		return parser;
+	}
+
 	colorRandomHsl()
 	{
 		var hueMax = 360;
@@ -18,24 +35,23 @@ class ImageToMeshParser
 		return meshColor;
 	}
 
-	edgeGroupsConnectedToMeshes(edgeGroupsConnected)
+	pathsConvertToMeshes(paths)
 	{
 		var returnValues = [];
 
-		for (var g = 0; g < edgeGroupsConnected.length; g++)
+		for (var g = 0; g < paths.length; g++)
 		{
-			var edgesInGroup = edgeGroupsConnected[g];
+			var path = paths[g];
 
-			var verticesMerged =
-				this.edgeGroupsConnectedToMeshes_1_VerticesMerged(edgesInGroup);
+			var pathVertices = path.vertices;
 
-			verticesMerged =
-				this.edgeGroupsConnectedToMeshes_2_VertexAddAboveEachCorner(verticesMerged);
+			var meshVertices =
+				this.pathsConvertToMeshes_1_VertexAddAboveEachCorner(pathVertices);
 
 			var vertexIndicesForFaces =
-				this.edgeGroupsConnectedToMeshes_3_VerticesToVertexIndicesForFaces
+				this.pathsConvertToMeshes_2_VerticesToVertexIndicesForFaces
 				(
-					edgesInGroup, verticesMerged
+					pathVertices
 				);
 
 			var meshColor = this.colorRandomHsl();
@@ -44,7 +60,7 @@ class ImageToMeshParser
 			(
 				"Mesh" + g,
 				meshColor,
-				verticesMerged,
+				meshVertices,
 				vertexIndicesForFaces
 			);
 
@@ -54,80 +70,36 @@ class ImageToMeshParser
 		return returnValues;
 	}
 
-	edgeGroupsConnectedToMeshes_1_VerticesMerged(edgesInGroup)
+	pathsConvertToMeshes_1_VertexAddAboveEachCorner(pathVertices)
 	{
-		var verticesMerged = [];
+		var pathVerticesDuplicatedAbove =
+			pathVertices
+				.map(x => x.clone().dimensionSet(2, 0 - this.wallHeight) );
 
-		for (var e = 0; e < edgesInGroup.length; e++)
-		{
-			var edge = edgesInGroup[e];
+		var pathVerticesDoubled = pathVertices.map(x => x);
+		pathVerticesDoubled.push(...pathVerticesDuplicatedAbove);
 
-			for (var i = 0; i < edge.vertices.length; i++)
-			{
-				var edgeVertex = edge.vertices[i];
-
-				if (verticesMerged.indexOf(edgeVertex) == -1)
-				{
-					var hasEdgeVertexBeenMerged = false;
-
-					for (var j = 0; j < verticesMerged.length; j++)
-					{
-						var vertexMerged = verticesMerged[j];
-						if (vertexMerged.equals(edgeVertex) )
-						{
-							edge.vertices[i] = vertexMerged;
-							hasEdgeVertexBeenMerged = true;
-							break;
-						}
-					}
-
-					if (hasEdgeVertexBeenMerged == false)
-					{
-						verticesMerged.push(edgeVertex);
-					}
-				}
-			}
-		}
-
-		return verticesMerged
+		return pathVerticesDoubled;
 	}
 
-	edgeGroupsConnectedToMeshes_2_VertexAddAboveEachCorner(verticesMerged)
-	{
-		var numberOfCorners = verticesMerged.length;
-
-		for (var v = 0; v < numberOfCorners; v++)
-		{
-			var vertex = verticesMerged[v];
-			var vertexAbove =
-				vertex
-					.clone()
-					.dimensionSet(2, 0 - this.wallHeight);
-			verticesMerged.push(vertexAbove);
-		}
-
-		return verticesMerged;
-	}
-
-	edgeGroupsConnectedToMeshes_3_VerticesToVertexIndicesForFaces
+	pathsConvertToMeshes_2_VerticesToVertexIndicesForFaces
 	(
-		edgesInGroup, verticesMerged
+		pathVertices
 	)
 	{
-		var numberOfCorners = verticesMerged.length / 2;
+		var numberOfCorners = pathVertices.length;
 
 		var vertexIndicesForFaces = [];
 
-		for (var e = 0; e < edgesInGroup.length; e++)
+		for (var v = 0; v < pathVertices.length; v++)
 		{
-			var edge = edgesInGroup[e];
-			var edgeVertices = edge.vertices;
+			var vNext = v + 1;
+			if (vNext >= pathVertices.length)
+			{
+				vNext = 0;
+			}
 
-			var vertexIndicesForFace = 
-			[
-				verticesMerged.indexOf(edgeVertices[0]),
-				verticesMerged.indexOf(edgeVertices[1]),
-			];
+			var vertexIndicesForFace = [ v, vNext ];
 
 			vertexIndicesForFace
 				.push(vertexIndicesForFace[1] + numberOfCorners);
@@ -140,27 +112,31 @@ class ImageToMeshParser
 		return vertexIndicesForFaces;
 	}
 
-	imageToEdgeGroupsConnected(image)
+	imageConvertToPaths(image)
 	{
 		var pointsOnWalls =
-			this.imageToEdgeGroupsConnected_1_ImageToPoints(image);
+			this.imageConvertToPaths_1_ImageToPoints(image);
 
 		var edgesForWalls =
-			this.imageToEdgeGroupsConnected_2_WallPointsToEdges(pointsOnWalls);
+			this.imageConvertToPaths_2_WallPointsToEdges(pointsOnWalls);
 
 		edgesForWalls =
-			this.imageToEdgeGroupsConnected_3_EdgesMerge(edgesForWalls);
+			this.imageConvertToPaths_3_EdgesMerge(edgesForWalls);
 
 		edgesForWalls =
-			this.imageToEdgeGroupsConnected_4_EdgesCullDiagonalCorners(edgesForWalls);
+			this.imageConvertToPaths_4_EdgesCullDiagonalCorners(edgesForWalls);
 
-		var edgeGroupsConnected =
-			this.imageToEdgeGroupsConnected_5_EdgesConnect(edgesForWalls);
+		var pathsAsEdgeGroups =
+			this.imageConvertToPaths_5_EdgesConnect(edgesForWalls);
 
-		return edgeGroupsConnected;
+		var paths =
+			pathsAsEdgeGroups
+				.map(eg => Path.fromEdges(eg) );
+
+		return paths;
 	}
 
-	imageToEdgeGroupsConnected_1_ImageToPoints(image)
+	imageConvertToPaths_1_ImageToPoints(image)
 	{
 		var mapSize = image.size;
 
@@ -201,7 +177,7 @@ class ImageToMeshParser
 		return pointsOnWalls;
 	}
 
-	imageToEdgeGroupsConnected_2_WallPointsToEdges(pointsOnWalls)
+	imageConvertToPaths_2_WallPointsToEdges(pointsOnWalls)
 	{
 		var edgesForWalls = [];
 
@@ -259,7 +235,7 @@ class ImageToMeshParser
 		return edgesForWalls;
 	}
 
-	imageToEdgeGroupsConnected_3_EdgesMerge(edgesForWalls)
+	imageConvertToPaths_3_EdgesMerge(edgesForWalls)
 	{
 		var wereAnyEdgesMergedInPreviousRun = true;
 
@@ -309,7 +285,7 @@ class ImageToMeshParser
 		return edgesForWalls;
 	}
 
-	imageToEdgeGroupsConnected_4_EdgesCullDiagonalCorners(edgesForWalls)
+	imageConvertToPaths_4_EdgesCullDiagonalCorners(edgesForWalls)
 	{
 		var indicesOfEdgesToCull = [];
 
@@ -334,7 +310,7 @@ class ImageToMeshParser
 		return edgesForWalls;
 	}
 
-	imageToEdgeGroupsConnected_5_EdgesConnect(edgesForWalls)
+	imageConvertToPaths_5_EdgesConnect(edgesForWalls)
 	{
 		var edgeGroupsConnected = [];
 

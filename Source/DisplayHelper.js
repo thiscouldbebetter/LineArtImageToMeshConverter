@@ -36,24 +36,30 @@ class DisplayHelper
 
 	drawMeshAbsolute(mesh)
 	{
-		this.graphics.strokeStyle = mesh.color;
-		this.graphics.lineWidth = 8;
-		this.graphics.lineJoin = "round";
-		
+		var g = this.graphics;
+
+		g.strokeStyle = mesh.color;
+		g.lineWidth = 8;
+		g.lineJoin = "round";
+
+		var meshVertices = mesh.vertices;
+
 		for (var f = 0; f < mesh.vertexIndicesForFaces.length; f++)
 		{
 			var vertexIndicesForFace = mesh.vertexIndicesForFaces[f];
 
-			this.graphics.beginPath();
+			var verticesForFace =
+				vertexIndicesForFace.map(vi => meshVertices[vi]);
 
-			for (var vi = 0; vi < vertexIndicesForFace.length; vi++)
+			g.beginPath();
+
+			for (var v = 0; v < verticesForFace.length; v++)
 			{
-				var vertexIndex = vertexIndicesForFace[vi];
-				var vertex = mesh.vertices[vertexIndex];
+				var vertex = verticesForFace[v];
 
-				if (vi == 0)
+				if (v == 0)
 				{
-					this.graphics.moveTo
+					g.moveTo
 					(
 						vertex.x,
 						vertex.y
@@ -61,7 +67,7 @@ class DisplayHelper
 				}
 				else
 				{
-					this.graphics.lineTo
+					g.lineTo
 					(
 						vertex.x,
 						vertex.y
@@ -69,46 +75,50 @@ class DisplayHelper
 				}
 			}
 
-			this.graphics.closePath();
-			this.graphics.stroke();
+			g.closePath();
+			g.stroke();
 		}
 	}
 
 	drawMeshForCamera(mesh, camera)
 	{
-		this.graphics.strokeStyle = mesh.color;
-		this.graphics.fillStyle = mesh.color;
+		var g = this.graphics;
+
+		g.strokeStyle = mesh.color;
+		g.fillStyle = mesh.color;
 
 		var drawPos = new Coords(0, 0, 0);
-		this.graphics.beginPath();
+		g.beginPath();
 
+		var meshVertices = mesh.vertices;
 		var vertexIndicesForFaces = mesh.vertexIndicesForFaces;
+
 		for (var f = 0; f < vertexIndicesForFaces.length; f++)
 		{
 			var vertexIndicesForFace = vertexIndicesForFaces[f];
+			var verticesForFace = vertexIndicesForFace.map(vi => meshVertices[vi] );
 
-			for (var vi = 0; vi < vertexIndicesForFace.length; vi++)
+			for (var v = 0; v < verticesForFace.length; v++)
 			{
-				var vertexIndex = vertexIndicesForFace[vi];
-				var vertex = mesh.vertices[vertexIndex];
+				var vertex = verticesForFace[v];
 
 				drawPos.overwriteWith(vertex);
 				camera.transformCamera.applyToCoords(drawPos);
 
-				if (vi == 0)
+				if (v == 0)
 				{
-					this.graphics.moveTo(drawPos.x, drawPos.y);
+					g.moveTo(drawPos.x, drawPos.y);
 				}
 				else
 				{
-					this.graphics.lineTo(drawPos.x, drawPos.y);
+					g.lineTo(drawPos.x, drawPos.y);
 				}
 
-				if (this.isDebugModeActive == true)
+				if (this.isDebugModeActive)
 				{
-					this.graphics.fillText
+					g.fillText
 					(
-						vertex.toString(),
+						vertex.toStringXY(),
 						drawPos.x, 
 						drawPos.y
 					);
@@ -116,57 +126,16 @@ class DisplayHelper
 				
 			}
 
-			this.graphics.closePath();
-			this.graphics.stroke();
+			g.closePath();
+			g.stroke();
 		}
 	}
-
 
 	drawWorld(world)
 	{
 		this.clear();
 
-		var newline = "\n";
-
-		var edgeGroups = world.edgeGroupsConnectedForMap;
-		var edgeGroupsAsStrings = [];
-		for (var eg = 0; eg < edgeGroups.length; eg++)
-		{
-			var edgeGroup = edgeGroups[eg];
-
-			var edgesAsStrings =
-				edgeGroup.map(e => e.toStringVerticesFromToXY() );
-			var edgesAsString =
-				edgesAsStrings.join(newline);
-
-			var edgeGroupAsString =
-				"Edge Group " + eg + ":"
-				+ newline
-				+ edgesAsString;
-
-			edgeGroupsAsStrings.push(edgeGroupAsString);
-		}
-
-		var blankLine = newline + newline;
-		var edgeGroupsAsString = edgeGroupsAsStrings.join(blankLine);
-
-		var d = document;
-
-		var textareaEdges =
-			d.getElementById("textareaEdges");
-		textareaEdges.value = edgeGroupsAsString;
-
 		var meshesForMap = world.meshesForMap;
-
-		var meshesAsStrings =
-			meshesForMap
-				.map(x => x.toStringVertexPositionsAndFacesAsVertexIndexArrays() );
-		var blankLine = newline + newline;
-		var meshesAsString = meshesAsStrings.join(blankLine);
-
-		var textareaMeshes =
-			d.getElementById("textareaMeshes");
-		textareaMeshes.value = meshesAsString;
 
 		for (var i = 0; i < meshesForMap.length; i++)
 		{
