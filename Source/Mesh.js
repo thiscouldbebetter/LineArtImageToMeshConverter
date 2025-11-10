@@ -9,6 +9,14 @@ class Mesh
 		this.vertexIndicesForFaces = vertexIndicesForFaces;
 	}
 
+	static fromNameColorVerticesAndVertexIndicesForFaces
+	(
+		name, color, vertices, vertexIndicesForFaces
+	)
+	{
+		return new Mesh(name, color, vertices, vertexIndicesForFaces);
+	}
+
 	face(faceIndex)
 	{
 		var verticesForFace = [];
@@ -21,6 +29,38 @@ class Mesh
 		}
 
 		var returnValue = new Face(verticesForFace);
+
+		return returnValue;
+	}
+
+	toStringVertexPositionsAndFacesAsVertexIndexArrays()
+	{
+		var verticesAsStrings =
+			this.vertices.map( (v, i) => i + ": " + v.toStringXYZ() )
+
+		var newline = "\n";
+
+		var verticesAsString = verticesAsStrings.join(newline);
+
+		var facesAsVertexIndexStrings =
+			this.vertexIndicesForFaces.map(f => f.join(", ") );
+
+		var facesAsString = facesAsVertexIndexStrings.join(newline);
+
+		var blankLine = newline + newline;
+
+		var returnValue =
+			"Mesh " + this.name + ":"
+			+ newline
+			+ "Color: " + this.color
+			+ newline
+			+ "Vertices:"
+			+ newline
+			+ verticesAsString
+			+ newline
+			+ "Faces:"
+			+ newline
+			+ facesAsString;
 
 		return returnValue;
 	}

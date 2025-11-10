@@ -199,14 +199,20 @@ class Coords
 		return this;
 	}
 
-	toString()
+	toStringXY()
 	{
 		var returnValue =
-			"(" 
+			+ this.x + "x" + this.y;
+
+		return returnValue;
+	}
+
+	toStringXYZ()
+	{
+		var returnValue =
 			+ this.x + ","
 			+ this.y + ","
-			+ this.z
-			+ ")";
+			+ this.z;
 
 		return returnValue;
 	}

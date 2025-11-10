@@ -9,24 +9,158 @@ class ImageToMeshParser
 		this.depthMax = depthMax;
 	}
 
-	imageToMeshes(image)
+	colorRandomHsl()
 	{
-		var pointsOnWalls = this.imageToMeshes_1_ImageToPoints(image);
+		var hueMax = 360;
+		var hue = Math.floor(Math.random() * hueMax);
+		var meshColor = "hsl(" + hue + ", 100%, 50%)";
 
-		var edgesForWalls = this.imageToMeshes_2_WallPointsToEdges(pointsOnWalls);
-
-		edgesForWalls = this.imageToMeshes_3_EdgesMerge(edgesForWalls);
-
-		edgesForWalls = this.imageToMeshes_4_EdgesCullDiagonalCorners(edgesForWalls);
-
-		var edgeGroupsConnected = this.imageToMeshes_5_EdgesConnect(edgesForWalls);
-
-		var meshesForWalls = this.imageToMeshes_6_EdgeGroupsToMeshes(edgeGroupsConnected);
-
-		return meshesForWalls;
+		return meshColor;
 	}
 
-	imageToMeshes_1_ImageToPoints(image)
+	edgeGroupsConnectedToMeshes(edgeGroupsConnected)
+	{
+		var returnValues = [];
+
+		for (var g = 0; g < edgeGroupsConnected.length; g++)
+		{
+			var edgesInGroup = edgeGroupsConnected[g];
+
+			var verticesMerged =
+				this.edgeGroupsConnectedToMeshes_1_VerticesMerged(edgesInGroup);
+
+			verticesMerged =
+				this.edgeGroupsConnectedToMeshes_2_VertexAddAboveEachCorner(verticesMerged);
+
+			var vertexIndicesForFaces =
+				this.edgeGroupsConnectedToMeshes_3_VerticesToVertexIndicesForFaces
+				(
+					edgesInGroup, verticesMerged
+				);
+
+			var meshColor = this.colorRandomHsl();
+
+			var mesh = Mesh.fromNameColorVerticesAndVertexIndicesForFaces
+			(
+				"Mesh" + g,
+				meshColor,
+				verticesMerged,
+				vertexIndicesForFaces
+			);
+
+			returnValues.push(mesh);
+		}
+
+		return returnValues;
+	}
+
+	edgeGroupsConnectedToMeshes_1_VerticesMerged(edgesInGroup)
+	{
+		var verticesMerged = [];
+
+		for (var e = 0; e < edgesInGroup.length; e++)
+		{
+			var edge = edgesInGroup[e];
+
+			for (var i = 0; i < edge.vertices.length; i++)
+			{
+				var edgeVertex = edge.vertices[i];
+
+				if (verticesMerged.indexOf(edgeVertex) == -1)
+				{
+					var hasEdgeVertexBeenMerged = false;
+
+					for (var j = 0; j < verticesMerged.length; j++)
+					{
+						var vertexMerged = verticesMerged[j];
+						if (vertexMerged.equals(edgeVertex) )
+						{
+							edge.vertices[i] = vertexMerged;
+							hasEdgeVertexBeenMerged = true;
+							break;
+						}
+					}
+
+					if (hasEdgeVertexBeenMerged == false)
+					{
+						verticesMerged.push(edgeVertex);
+					}
+				}
+			}
+		}
+
+		return verticesMerged
+	}
+
+	edgeGroupsConnectedToMeshes_2_VertexAddAboveEachCorner(verticesMerged)
+	{
+		var numberOfCorners = verticesMerged.length;
+
+		for (var v = 0; v < numberOfCorners; v++)
+		{
+			var vertex = verticesMerged[v];
+			var vertexAbove =
+				vertex
+					.clone()
+					.dimensionSet(2, 0 - this.wallHeight);
+			verticesMerged.push(vertexAbove);
+		}
+
+		return verticesMerged;
+	}
+
+	edgeGroupsConnectedToMeshes_3_VerticesToVertexIndicesForFaces
+	(
+		edgesInGroup, verticesMerged
+	)
+	{
+		var numberOfCorners = verticesMerged.length / 2;
+
+		var vertexIndicesForFaces = [];
+
+		for (var e = 0; e < edgesInGroup.length; e++)
+		{
+			var edge = edgesInGroup[e];
+			var edgeVertices = edge.vertices;
+
+			var vertexIndicesForFace = 
+			[
+				verticesMerged.indexOf(edgeVertices[0]),
+				verticesMerged.indexOf(edgeVertices[1]),
+			];
+
+			vertexIndicesForFace
+				.push(vertexIndicesForFace[1] + numberOfCorners);
+			vertexIndicesForFace
+				.push(vertexIndicesForFace[0] + numberOfCorners);
+
+			vertexIndicesForFaces.push(vertexIndicesForFace);
+		}
+
+		return vertexIndicesForFaces;
+	}
+
+	imageToEdgeGroupsConnected(image)
+	{
+		var pointsOnWalls =
+			this.imageToEdgeGroupsConnected_1_ImageToPoints(image);
+
+		var edgesForWalls =
+			this.imageToEdgeGroupsConnected_2_WallPointsToEdges(pointsOnWalls);
+
+		edgesForWalls =
+			this.imageToEdgeGroupsConnected_3_EdgesMerge(edgesForWalls);
+
+		edgesForWalls =
+			this.imageToEdgeGroupsConnected_4_EdgesCullDiagonalCorners(edgesForWalls);
+
+		var edgeGroupsConnected =
+			this.imageToEdgeGroupsConnected_5_EdgesConnect(edgesForWalls);
+
+		return edgeGroupsConnected;
+	}
+
+	imageToEdgeGroupsConnected_1_ImageToPoints(image)
 	{
 		var mapSize = image.size;
 
@@ -44,7 +178,10 @@ class ImageToMeshParser
 
 				var pixelColor = image.colorOfPixelAtPos(pixelPos);
 
-				if (pixelColor.equals(this.colorToIgnore) == true)
+				var pixelColorShouldBeIgnored =
+					pixelColor.equals(this.colorToIgnore);
+
+				if (pixelColorShouldBeIgnored)
 				{
 					// do nothing
 				}
@@ -54,10 +191,9 @@ class ImageToMeshParser
 						pixelColor.hue() 
 						* this.depthMax;
 
-					pointsOnWalls.push
-					(
-						pixelPos.clone().dimensionSet(2, depth)
-					);
+					var pointOnWall = pixelPos.clone().dimensionSet(2, depth);
+
+					pointsOnWalls.push(pointOnWall);
 				}
 			}
 		}
@@ -65,7 +201,7 @@ class ImageToMeshParser
 		return pointsOnWalls;
 	}
 
-	imageToMeshes_2_WallPointsToEdges(pointsOnWalls)
+	imageToEdgeGroupsConnected_2_WallPointsToEdges(pointsOnWalls)
 	{
 		var edgesForWalls = [];
 
@@ -82,16 +218,15 @@ class ImageToMeshParser
 			{
 				var pointOther = pointsOnWalls[j];
 				
-				var distanceBetweenPointsXY = pointThis.clone().subtract
-				(
-					pointOther
-				).dimensionSet
-				(
-					2, 0
-				).magnitude();
+				var distanceBetweenPointsXY =
+					pointThis
+						.clone()
+						.subtract(pointOther)
+						.dimensionSet(2, 0)
+						.magnitude();
 
 				if (distanceBetweenPointsXY < distanceThreshold)
-				{	
+				{
 					var d;
 					for (d = 0; d < distancesToPointsClosestSoFar.length; d++)
 					{
@@ -102,14 +237,10 @@ class ImageToMeshParser
 						}
 					}
 
-					distancesToPointsClosestSoFar.splice
-					(
-						d, 0, distanceBetweenPointsXY
-					);
-					pointsClosestSoFar.splice
-					(
-						d, 0, pointOther
-					);
+					distancesToPointsClosestSoFar
+						.splice(d, 0, distanceBetweenPointsXY);
+
+					pointsClosestSoFar.splice(d, 0, pointOther);
 				}
 			}
 
@@ -128,11 +259,11 @@ class ImageToMeshParser
 		return edgesForWalls;
 	}
 
-	imageToMeshes_3_EdgesMerge(edgesForWalls)
+	imageToEdgeGroupsConnected_3_EdgesMerge(edgesForWalls)
 	{
 		var wereAnyEdgesMergedInPreviousRun = true;
 
-		while (wereAnyEdgesMergedInPreviousRun == true)
+		while (wereAnyEdgesMergedInPreviousRun)
 		{
 			wereAnyEdgesMergedInPreviousRun = false;
 
@@ -176,9 +307,9 @@ class ImageToMeshParser
 		}
 
 		return edgesForWalls;
-	}	
+	}
 
-	imageToMeshes_4_EdgesCullDiagonalCorners(edgesForWalls)
+	imageToEdgeGroupsConnected_4_EdgesCullDiagonalCorners(edgesForWalls)
 	{
 		var indicesOfEdgesToCull = [];
 
@@ -203,7 +334,7 @@ class ImageToMeshParser
 		return edgesForWalls;
 	}
 
-	imageToMeshes_5_EdgesConnect(edgesForWalls)
+	imageToEdgeGroupsConnected_5_EdgesConnect(edgesForWalls)
 	{
 		var edgeGroupsConnected = [];
 
@@ -216,7 +347,7 @@ class ImageToMeshParser
 
 		var wereAnyGroupsMerged = true;
 
-		while (wereAnyGroupsMerged == true)
+		while (wereAnyGroupsMerged)
 		{
 			wereAnyGroupsMerged = false;
 
@@ -242,21 +373,21 @@ class ImageToMeshParser
 								edgeOther
 							);
 
-							if (areEdgesConnectedXY == true)
+							if (areEdgesConnectedXY)
 							{
 								areGroupsConnected = true;
 								wereAnyGroupsMerged = true;
 								break;
 							}
 						}
-	
-						if (areGroupsConnected == true)
+
+						if (areGroupsConnected)
 						{
 							break;
 						}
 					}
-	
-					if (areGroupsConnected == true)
+
+					if (areGroupsConnected)
 					{
 						for (var k = 0; k < edgeGroupOther.length; k++)
 						{
@@ -271,103 +402,6 @@ class ImageToMeshParser
 		}
 
 		return edgeGroupsConnected;
-	}
-
-	imageToMeshes_6_EdgeGroupsToMeshes(edgeGroupsConnected)
-	{
-		var returnValues = [];
-
-		for (var g = 0; g < edgeGroupsConnected.length; g++)
-		{
-			var edgesInGroup = edgeGroupsConnected[g];
-
-			var verticesMerged = [];
-			var vertexIndicesForFaces = [];
-
-			for (var e = 0; e < edgesInGroup.length; e++)
-			{
-				var edge = edgesInGroup[e];
-
-				for (var i = 0; i < edge.vertices.length; i++)
-				{
-					var edgeVertex = edge.vertices[i];
-
-					if (verticesMerged.indexOf(edgeVertex) == -1)
-					{
-						var hasEdgeVertexBeenMerged = false;
-
-						for (var j = 0; j < verticesMerged.length; j++)
-						{
-							var vertexMerged = verticesMerged[j];
-							if (vertexMerged.equals(edgeVertex) )
-							{
-								edge.vertices[i] = vertexMerged;
-								hasEdgeVertexBeenMerged = true;
-								break;
-							}
-						}
-	
-						if (hasEdgeVertexBeenMerged == false)
-						{
-							verticesMerged.push(edgeVertex);
-						}
-					}
-				}
-			}
-
-			var numberOfCorners = verticesMerged.length;
-
-			for (var v = 0; v < numberOfCorners; v++)
-			{
-				var vertex = verticesMerged[v];
-				var vertexAbove = vertex.clone().dimensionSet
-				(
-					2, 0 - this.wallHeight
-				);
-				verticesMerged.push(vertexAbove);
-			}
-
-			var vertexIndicesForFaces = [];
-
-			for (var e = 0; e < edgesInGroup.length; e++)
-			{
-				var edge = edgesInGroup[e];
-				var edgeVertices = edge.vertices;
-
-				var vertexIndicesForFace = 
-				[
-					verticesMerged.indexOf(edgeVertices[0]),
-					verticesMerged.indexOf(edgeVertices[1]),
-				];
-
-				vertexIndicesForFace.push
-				(
-					vertexIndicesForFace[1] + numberOfCorners
-				);
-				vertexIndicesForFace.push
-				(
-					vertexIndicesForFace[0] + numberOfCorners
-				);
-
-				vertexIndicesForFaces.push(vertexIndicesForFace);
-			}
-
-			var hueMax = 360;
-			var hue = Math.floor(Math.random() * hueMax);
-			var meshColor = "hsl(" + hue + ", 100%, 50%)";
-
-			var mesh = new Mesh
-			(
-				"Mesh" + i,
-				meshColor,
-				verticesMerged,
-				vertexIndicesForFaces
-			);
-
-			returnValues.push(mesh);
-		}
-
-		return returnValues;
 	}
 }
 
@@ -384,13 +418,13 @@ class InputHelper
 
 	handleEventKeyDown(event)
 	{
-		this.keyCodePressed = event.keyCode;
+		this.keyPressed = event.key;
 		Globals.Instance.world.update();
 	}
 
 	handleEventKeyUp(event)
 	{
-		this.keyCodePressed = null;
+		this.keyPressed = null;
 		Globals.Instance.world.update();
 	}
 }

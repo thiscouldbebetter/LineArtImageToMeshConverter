@@ -5,6 +5,9 @@ class World
 	{
 		this.imageForMap = imageForMap;
 		this.camera = camera;
+
+		this.edgeGroupsConnectedForMap = null;
+		this.meshesForMap = null;
 	}
 
 	initialize()
@@ -12,6 +15,7 @@ class World
 		var colorToIgnore = new Color([255, 255, 255, 255]);
 		var colorForWall = new Color([0, 0, 0, 255]);
 		var wallHeight = 10;
+
 		var parser = new ImageToMeshParser
 		(
 			colorToIgnore,
@@ -19,15 +23,20 @@ class World
 			wallHeight,
 			10 // depthMax
 		);
-		this.meshesForMap = parser.imageToMeshes(this.imageForMap);
+
+		this.edgeGroupsConnectedForMap =
+			parser.imageToEdgeGroupsConnected(this.imageForMap);
+
+		this.meshesForMap =
+			parser.edgeGroupsConnectedToMeshes(this.edgeGroupsConnectedForMap);
 	}
 
 	update()
 	{
 		var inputHelper = Globals.Instance.inputHelper;
-		var keyCodePressed = inputHelper.keyCodePressed;
+		var keyPressed = inputHelper.keyPressed;
 
-		if (keyCodePressed != null)
+		if (keyPressed != null)
 		{
 			var cameraPos = this.camera.pos;
 			var cameraMoveAxes = new Orientation
@@ -36,67 +45,46 @@ class World
 				new Coords(0, 1, 0)
 			);
 			var cameraSpeed = 4;
+			var cameraOffset = new Coords(0, 0, 0);
 
-			if (keyCodePressed == 65) // a
+			if (keyPressed == "a")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.right.clone().multiplyScalar
-					(
-						0 - cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.right)
+					.multiplyScalar(0 - cameraSpeed);
 			}
-			else if (keyCodePressed == 68) // d
+			else if (keyPressed == "d")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.right.clone().multiplyScalar
-					(
-						cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.right)
+					.multiplyScalar(cameraSpeed);
 			}
-			else if (keyCodePressed == 70) // f
+			else if (keyPressed == "f")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.forward.clone().multiplyScalar
-					(
-						cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.forward)
+					.multiplyScalar(cameraSpeed);
 			}
-			else if (keyCodePressed == 82) // r
+			else if (keyPressed == "r")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.forward.clone().multiplyScalar
-					(
-						0 - cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.forward)
+					.multiplyScalar(0 - cameraSpeed);
 			}
-			else if (keyCodePressed == 83) // s
+			else if (keyPressed == "s")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.down.clone().multiplyScalar
-					(
-						cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.down)
+					.multiplyScalar(cameraSpeed);
 			}
-			else if (keyCodePressed == 87) // w
+			else if (keyPressed == "w")
 			{
-				cameraPos.add
-				(
-					cameraMoveAxes.down.clone().multiplyScalar
-					(
-						0 - cameraSpeed
-					)
-				);
+				cameraOffset
+					.overwriteWith(cameraMoveAxes.down)
+					.multiplyScalar(0 - cameraSpeed);
 			}
+
+			cameraPos.add(cameraOffset);
 		}
 
 		Globals.Instance.displayHelper.drawWorld(this);

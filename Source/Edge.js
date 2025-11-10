@@ -93,4 +93,9 @@ class Edge
 
 		return returnValue;	
 	}
+
+	toStringVerticesFromToXY()
+	{
+		return this.vertices.map(x => x.toStringXY() ).join("-");
+	}
 }

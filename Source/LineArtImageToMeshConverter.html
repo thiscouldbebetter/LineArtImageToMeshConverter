@@ -12,7 +12,7 @@
 	</p>
 
 	<div>
-		<label>Image File to Convert to Mesh:</label>
+		<label>Image File to Convert to Meshes:</label>
 		<input
 			id="inputMapImageFile"
 			type="file"
@@ -21,9 +21,30 @@
 	</div>
 
 	<div>
-		<label>Mesh:</label>
-		<div id="divOutput">
-			[none]
+		<label>Groups of Connected Edges:</label>
+		<div>
+			<textarea
+				id="textareaEdges"
+				cols="40" rows="10"
+				spellcheck="false"
+			></textarea>
+		</div>
+	</div>
+
+	<div>
+		<label>Meshes:</label>
+		<div>
+			<textarea
+				id="textareaMeshes"
+				cols="40" rows="10"
+				spellcheck="false"
+			></textarea>
+		</div>
+		<div>
+			<label>Rendered:</label>
+			<div id="divMeshesRendered">
+				[not yet rendered]
+			</div>
 		</div>
 	</div>
 

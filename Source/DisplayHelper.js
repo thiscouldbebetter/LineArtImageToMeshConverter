@@ -126,9 +126,48 @@ class DisplayHelper
 	{
 		this.clear();
 
-		//this.drawImage(world.imageForMap, new Coords(0, 0));
+		var newline = "\n";
+
+		var edgeGroups = world.edgeGroupsConnectedForMap;
+		var edgeGroupsAsStrings = [];
+		for (var eg = 0; eg < edgeGroups.length; eg++)
+		{
+			var edgeGroup = edgeGroups[eg];
+
+			var edgesAsStrings =
+				edgeGroup.map(e => e.toStringVerticesFromToXY() );
+			var edgesAsString =
+				edgesAsStrings.join(newline);
+
+			var edgeGroupAsString =
+				"Edge Group " + eg + ":"
+				+ newline
+				+ edgesAsString;
+
+			edgeGroupsAsStrings.push(edgeGroupAsString);
+		}
+
+		var blankLine = newline + newline;
+		var edgeGroupsAsString = edgeGroupsAsStrings.join(blankLine);
+
+		var d = document;
+
+		var textareaEdges =
+			d.getElementById("textareaEdges");
+		textareaEdges.value = edgeGroupsAsString;
 
 		var meshesForMap = world.meshesForMap;
+
+		var meshesAsStrings =
+			meshesForMap
+				.map(x => x.toStringVertexPositionsAndFacesAsVertexIndexArrays() );
+		var blankLine = newline + newline;
+		var meshesAsString = meshesAsStrings.join(blankLine);
+
+		var textareaMeshes =
+			d.getElementById("textareaMeshes");
+		textareaMeshes.value = meshesAsString;
+
 		for (var i = 0; i < meshesForMap.length; i++)
 		{
 			var mesh = meshesForMap[i];
@@ -149,8 +188,8 @@ class DisplayHelper
 
 		this.graphics = canvas.getContext("2d");
 
-		var divOutput = d.getElementById("divOutput");
-		divOutput.innerHTML = "";
-		divOutput.appendChild(canvas);
+		var divMeshesRendered = d.getElementById("divMeshesRendered");
+		divMeshesRendered.innerHTML = "";
+		divMeshesRendered.appendChild(canvas);
 	}
 }
