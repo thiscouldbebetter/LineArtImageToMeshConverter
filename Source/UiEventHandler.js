@@ -84,5 +84,9 @@ class UiEventHandler
 		var textareaPaths =
 			d.getElementById("textareaPaths");
 		textareaPaths.value = pathsAsString;
+
+		var divImageUploaded = d.getElementById("divImageUploaded");
+		divImageUploaded.innerHTML = "";
+		divImageUploaded.appendChild(imageToConvert.systemImage);
 	}
 }

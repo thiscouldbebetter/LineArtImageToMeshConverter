@@ -35,6 +35,8 @@ class Color
 
 	hue()
 	{
+		// This may not calculate correctly.
+
 		var returnValue = null;
 
 		var red = this.componentsRGBA[0];
