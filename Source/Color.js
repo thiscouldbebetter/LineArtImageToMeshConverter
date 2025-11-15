@@ -111,4 +111,16 @@ class Color
 
 		return returnValue;
 	}
+
+	// Serialization.
+
+	toStringJson()
+	{
+		var thisAsObjectSerializable =
+		{
+			componentsRGBA: this.componentsRGBA
+		};
+		var thisAsStringJson = JSON.stringify(thisAsObjectSerializable)
+		return thisAsStringJson;
+	}
 }

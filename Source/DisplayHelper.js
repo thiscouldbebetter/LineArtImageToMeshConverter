@@ -118,7 +118,7 @@ class DisplayHelper
 				{
 					g.fillText
 					(
-						vertex.toStringXY(),
+						vertex.toStringXxY(),
 						drawPos.x, 
 						drawPos.y
 					);

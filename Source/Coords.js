@@ -211,7 +211,7 @@ class Coords
 
 	// Serialization.
 
-	static fromStringXY(coordsAsString)
+	static fromStringXxY(coordsAsString)
 	{
 		var xAndYAsStrings = coordsAsString.split("x");
 		var xAndY = xAndYAsStrings.map(x => parseFloat(x) );
@@ -221,7 +221,7 @@ class Coords
 		return returnValue;
 	}
 
-	static fromStringXYZ(coordsAsString)
+	static fromStringXxYxZ(coordsAsString)
 	{
 		var xyzAsStrings = coordsAsString.split("x");
 		var xyz = xyzAsStrings.map(x => parseFloat(x) );
@@ -232,7 +232,7 @@ class Coords
 		return returnValue;
 	}
 
-	toStringXY()
+	toStringXxY()
 	{
 		var returnValue =
 			+ this.x + "x" + this.y;
@@ -240,7 +240,7 @@ class Coords
 		return returnValue;
 	}
 
-	toStringXYZ()
+	toStringXxYxZ()
 	{
 		var returnValue =
 			+ this.x + "x"

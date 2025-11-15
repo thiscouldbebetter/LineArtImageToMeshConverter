@@ -96,7 +96,7 @@ class Edge
 
 	toStringVerticesFromToXY()
 	{
-		return this.vertices.map(x => x.toStringXY() ).join("-");
+		return this.vertices.map(x => x.toStringXxY() ).join("-");
 	}
 
 	verticesReverse()

@@ -1,26 +1,41 @@
 
 class ImageToMeshParser
 {
-	constructor(colorToIgnore, colorForWall, wallHeight, depthMax)
+	constructor
+	(
+		colorToIgnore,
+		colorForWall,
+		wallHeightInPixels,
+		depthMax
+	)
 	{
-		this.colorToIgnore = colorToIgnore;
-		this.colorForWall = colorForWall;
-		this.wallHeight = wallHeight;
-		this.depthMax = depthMax;
+		this.colorToIgnore = colorToIgnore || new Color([255, 255, 255, 255]);
+		this.colorForWall = colorForWall || new Color([0, 0, 0, 255]);
+		this.wallHeightInPixels = wallHeightInPixels || 10;
+		this.depthMax = depthMax || 10;
 	}
 
 	static default()
 	{
-		var colorToIgnore = new Color([255, 255, 255, 255]);
-		var colorForWall = new Color([0, 0, 0, 255]);
-		var wallHeight = 10;
-
 		var parser = new ImageToMeshParser
 		(
-			colorToIgnore,
-			colorForWall, 
-			wallHeight,
-			10 // depthMax
+			null, // colorToIgnore
+			null, // colorForWall
+			null, // wallHeight
+			null // depthMax
+		);
+
+		return parser;
+	}
+
+	static fromWallHeightInPixels(wallHeightInPixels)
+	{
+		var parser = new ImageToMeshParser
+		(
+			null, // colorToIgnore
+			null, // colorForWall
+			wallHeightInPixels,
+			null // depthMax
 		);
 
 		return parser;
@@ -74,7 +89,7 @@ class ImageToMeshParser
 	{
 		var pathVerticesDuplicatedAbove =
 			pathVertices
-				.map(x => x.clone().dimensionSet(2, 0 - this.wallHeight) );
+				.map(x => x.clone().dimensionSet(2, 0 - this.wallHeightInPixels) );
 
 		var pathVerticesDoubled = pathVertices.map(x => x);
 		pathVerticesDoubled.push(...pathVerticesDuplicatedAbove);
@@ -193,7 +208,7 @@ class ImageToMeshParser
 			for (var j = i + 1; j < pointsOnWalls.length; j++)
 			{
 				var pointOther = pointsOnWalls[j];
-				
+
 				var distanceBetweenPointsXY =
 					pointThis
 						.clone()

@@ -42,7 +42,7 @@ class Image
 		var canvas = document.createElement("canvas");
 		canvas.width = this.size.x;
 		canvas.height = this.size.y;
-		this.graphics = canvas.getContext("2d");
+		this.graphics = canvas.getContext("2d", { willReadFrequently: true } );
 		this.graphics.drawImage(this.systemImage, 0, 0);
 
 		callback.call(this);

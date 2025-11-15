@@ -50,33 +50,16 @@ class Path
 
 	// Serialization.
 
-	static fromStringHumanReadable(pathAsString)
+	static fromStringJson(pathAsString)
 	{
-		var newline = "\n";
-		var lines = pathAsString.split(newline);
-		var verticesAsStrings = lines.slice(2);
-		var vertices =
-			verticesAsStrings
-				.map(x => Coords.fromStringXY(x) );
-		var path = Path.fromVertices(vertices);
-		return path;
+		var vertices = pathAsString.split("-").map(x => Coords.fromStringXxY(x) );
+		return new Path(vertices);
 	}
 
-	toStringHumanReadable()
+	toStringJson()
 	{
-		var lines = 
-		[
-			Path.name + ":",
-			"Vertices:",
-		];
-
-		var verticesAsLines = this.vertices.map(x => x.toStringXY() );
-
-		lines.push(...verticesAsLines);
-
-		var newline = "\n";
-		var returnValue = lines.join(newline);
-
+		var returnValue =
+			this.vertices.map(x => x.toStringXxY() ).join("-")
 		return returnValue;
 	}
 }

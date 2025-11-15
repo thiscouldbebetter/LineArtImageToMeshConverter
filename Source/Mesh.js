@@ -35,66 +35,41 @@ class Mesh
 
 	// Serialization.
 
-	static fromStringHumanReadable(meshAsString)
+	static fromObjectDeserialized(meshAsObjectDeserialized)
 	{
-		var newline = "\n";
-		var lines = meshAsString.split(newline);
-		var name = lines[1].split(": ")[1];
-		var color = lines[2].split(": ")[1];
-
-		lines = lines.slice(4);
-		var textFaces = "Faces:";
-		var lineIndexForTextFaces = lines.indexOf(textFaces);
-		var verticesAsStrings = lines.slice(0, lineIndexForTextFaces);
-		var facesAsLines = lines.slice(lineIndexForTextFaces + 1);
+		var color = meshAsObjectDeserialized.color; // todo - Shouldn't just be string.
 
 		var vertices =
-			verticesAsStrings.map(x => Coords.fromStringXYZ(x.split(": ")[1] ) );
+			meshAsObjectDeserialized
+				.vertices
+				.map(x => Coords.fromStringXxYxZ(x) );
 
-		var vertexIndicesForFaces =
-			facesAsLines.map
-			(
-				x => 
-					x
-						.split(": ")[1]
-						.split(", ")
-						.map(y => parseInt(y) )
-			);
+		var faces =
+			meshAsObjectDeserialized
+				.faces
+				.map(x => x.split("-").map(y => parseInt(y) ) );
 
-		var mesh = Mesh.fromNameColorVerticesAndVertexIndicesForFaces
+		var mesh = new Mesh
 		(
-			name, color, vertices, vertexIndicesForFaces 
+			meshAsObjectDeserialized.name,
+			color,
+			vertices,
+			faces
 		);
 
 		return mesh;
 	}
 
-	toStringHumanReadable()
+	toObjectSerializable()
 	{
-		var verticesAsStrings =
-			this.vertices.map( (v, i) => i + ": " + v.toStringXYZ() )
+		var thisAsObjectSerializable =
+		{
+			name: this.name,
+			color: this.color, // Just a string, not actually a Color instance.
+			vertices: this.vertices.map(x => x.toStringXxYxZ() ),
+			faces: this.vertexIndicesForFaces.map(x => x.join("-") )
+		};
 
-		var newline = "\n";
-
-		var verticesAsString = verticesAsStrings.join(newline);
-
-		var facesAsVertexIndexStrings =
-			this.vertexIndicesForFaces.map( (f, i) => i + ": " + f.join(", ") );
-
-		var facesAsString = facesAsVertexIndexStrings.join(newline);
-
-		var lines =
-		[
-			Mesh.name,
-			"Name: " + this.name,
-			"Color: " + this.color,
-			"Vertices:",
-			verticesAsString,
-			"Faces:",
-			facesAsString
-		];
-
-		var returnValue = lines.join(newline);
-		return returnValue;
+		return thisAsObjectSerializable;
 	}
 }

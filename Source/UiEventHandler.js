@@ -7,12 +7,12 @@ class UiEventHandler
 		var textareaMeshes =
 			d.getElementById("textareaMeshes");
 		var meshesAsString = textareaMeshes.value;
-		var newline = "\n";
-		var blankLine = newline + newline;
-		var meshesAsStrings = meshesAsString.split(blankLine);
+		var meshesAsObjectDeserialized = JSON.parse(meshesAsString);
+		var meshesAsObjectsDeserialized =
+			meshesAsObjectDeserialized.meshes;
 		var meshes =
-			meshesAsStrings
-				.map(x => Mesh.fromStringHumanReadable(x) );
+			meshesAsObjectsDeserialized
+				.map(x => Mesh.fromObjectDeserialized(x) );
 
 		var camera = new Camera
 		(
@@ -39,17 +39,28 @@ class UiEventHandler
 	static buttonPathsToMeshes_Clicked()
 	{
 		var d = document;
+
 		var textareaPaths =
 			d.getElementById("textareaPaths");
-		var pathsAsString = textareaPaths.value;
-		var newline = "\n";
-		var blankLine = newline + newline;
-		var pathsAsStrings = pathsAsString.split(blankLine);
-		var paths = pathsAsStrings.map(x => Path.fromStringHumanReadable(x) );
-		var imageToMeshParser = ImageToMeshParser.default();
+		var pathsAsStringJson = textareaPaths.value;
+		var pathsAsObjectDeserizlied = JSON.parse(pathsAsStringJson);
+		var pathsAsStrings = pathsAsObjectDeserizlied.paths;
+		var paths = pathsAsStrings.map(x => Path.fromStringJson(x) );
+
+		var inputWallHeightInPixels =
+			d.getElementById("inputWallHeightInPixels");
+		var wallHeightInPixels = parseFloat(inputWallHeightInPixels.value);
+
+		var imageToMeshParser =
+			ImageToMeshParser.fromWallHeightInPixels(wallHeightInPixels);
 		var meshes = imageToMeshParser.pathsConvertToMeshes(paths);
-		var meshesAsStrings = meshes.map(x => x.toStringHumanReadable() );
-		var meshesAsString = meshesAsStrings.join(blankLine);
+
+		var meshesAsObjectsSerializable = meshes.map(x => x.toObjectSerializable() );
+		var meshesAsObjectSerializable =
+		{
+			meshes: meshesAsObjectsSerializable
+		}
+		var meshesAsString = JSON.stringify(meshesAsObjectSerializable, null, 4);
 		var textareaMeshes =
 			d.getElementById("textareaMeshes");
 		textareaMeshes.value = meshesAsString;
@@ -76,14 +87,17 @@ class UiEventHandler
 		var imageToConvert = this;
 		var imageToMeshParser = ImageToMeshParser.default();
 		var paths = imageToMeshParser.imageConvertToPaths(imageToConvert);
-		var pathsAsStrings = paths.map(x => x.toStringHumanReadable() );
-		var newline = "\n";
-		var blankLine = newline + newline;
-		var pathsAsString = pathsAsStrings.join(blankLine);
+		var pathsAsStrings = paths.map(x => x.toStringJson() );
+		var pathsAsObjectSerializable =
+		{
+			paths: pathsAsStrings
+		};
+		var pathsAsStringJson =
+			JSON.stringify(pathsAsObjectSerializable, null, 4);
 		var d = document;
 		var textareaPaths =
 			d.getElementById("textareaPaths");
-		textareaPaths.value = pathsAsString;
+		textareaPaths.value = pathsAsStringJson;
 
 		var divImageUploaded = d.getElementById("divImageUploaded");
 		divImageUploaded.innerHTML = "";
